@@ -36,19 +36,11 @@ jobs:
         with:
           version: "0.10.0"
           enable-cache: true
-      - name: Resolve and install dependencies
-        run: uv sync --all-extras --python ${{ matrix.python-version }}
+      - name: Install exact locked dependencies
+        run: uv sync --locked --all-extras --python ${{ matrix.python-version }}
       - name: Check formatting and lint
         run: uv run --python ${{ matrix.python-version }} ruff check .
       - name: Check types
         run: uv run --python ${{ matrix.python-version }} mypy src/astra
       - name: Run tests with coverage
         run: uv run --python ${{ matrix.python-version }} pytest --cov=astra --cov-report=term-missing --cov-fail-under=90
-      - name: Upload initial lockfile for bootstrap review
-        if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: astra-uv-lock-bootstrap
-          path: uv.lock
-          if-no-files-found: error
-          retention-days: 1
