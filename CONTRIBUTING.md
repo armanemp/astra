@@ -6,13 +6,13 @@ Astra is in foundation and durable-core development. Keep changes small, reversi
 
 Install Python 3.12–3.14 and uv.
 
-- uv sync --all-extras
+- uv sync --locked --all-extras
 - uv run alembic upgrade head
 - uv run pytest
 - uv run ruff check .
 - uv run mypy src/astra
 
-After uv.lock is committed, use uv sync --locked --all-extras; update the lock only through a reviewed dependency-change PR.
+When changing dependencies, update pyproject.toml and uv.lock together using uv lock. Review the lockfile diff and verify uv sync --locked --all-extras before opening a PR. CI must not silently regenerate the lockfile.
 
 Do not commit virtual environments, local databases, .env files, credentials, or private data.
 

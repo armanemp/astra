@@ -10,7 +10,8 @@ Astra is an evolving, safety-conscious AI assistant platform for research, plann
 - Typed environment configuration; production requires PostgreSQL and disables interactive API docs.
 - Mission create/list/get/transition APIs backed by SQLAlchemy records and Alembic migrations in development/staging.
 - Idempotent creation via the Idempotency-Key header, optimistic concurrency via mission versions, and ordered transition audit history.
-- CI quality gates, architecture/security documentation, and a living roadmap.
+- Committed uv.lock and CI that installs exact locked dependencies on Python 3.12–3.14.
+- Architecture/security documentation and a living roadmap.
 
 Authentication, Temporal durable workflows, provider integrations, long-term memory, sandboxed code execution, human approval UI, and production release remain unimplemented. Until authentication is implemented, mission mutation and query endpoints are not mounted in production. Release and rollback API transitions are also blocked until authenticated approval and a release controller exist.
 
@@ -18,7 +19,7 @@ Authentication, Temporal durable workflows, provider integrations, long-term mem
 
 Requires Python 3.12–3.14 and uv.
 
-1. Install dependencies with uv sync --all-extras.
+1. Install exact dependencies with uv sync --locked --all-extras.
 2. Apply database migrations with uv run alembic upgrade head.
 3. Start the API with uv run uvicorn astra.main:app --reload.
 
@@ -35,6 +36,7 @@ These mission endpoints are enabled only outside production until authentication
 
 ## Quality checks
 
+- uv sync --locked --all-extras
 - uv run ruff check .
 - uv run mypy src/astra
 - uv run pytest --cov=astra --cov-report=term-missing --cov-fail-under=90

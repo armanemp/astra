@@ -22,15 +22,15 @@ Build a general-purpose assistant that can research, plan, use constrained tools
 
 ## Phases and gates
 
-### Phase 0 — Engineering foundation (dependency-lock gate open)
-Deliverables: repository conventions, typed settings, FastAPI factory, health/metadata endpoints, mission lifecycle contract, tests, CI, ADRs, security policy, threat model, and acceptance scorecard.
+### Phase 0 — Engineering foundation (dependency lock gate under verification)
+Deliverables: repository conventions, typed settings, FastAPI factory, health/metadata endpoints, mission lifecycle contract, tests, CI, ADRs, security policy, threat model, acceptance scorecard, and a committed dependency lock.
 
-Exit criteria: CI passes on all supported Python versions; invalid mission transitions are rejected; production config disables interactive docs; setup is documented; uv.lock is committed and CI verifies locked installs; no secrets or unbounded execution paths are introduced.
+Exit criteria: CI passes on all supported Python versions using uv sync --locked; invalid mission transitions are rejected; production config disables interactive docs; setup is documented; no secrets or unbounded execution paths are introduced.
 
 ### Phase 1 — Durable mission core (in progress)
 Deliverables: PostgreSQL schema/migrations, mission/task APIs, idempotency keys, transactional state transitions, durable workflow execution, and restart/retry tests.
 
-Implemented in this work package: SQLAlchemy records, Alembic migration, mission create/list/get/transition APIs, idempotent creation, optimistic version checks, append-only transition history, and database readiness checks. Authentication, Temporal workflows, PostgreSQL service integration tests, and workflow restart/retry tests remain future work.
+Implemented: SQLAlchemy records, Alembic migration, mission create/list/get/transition APIs, idempotent creation, optimistic version checks, append-only transition history, and database readiness checks. Authentication, Temporal workflows, PostgreSQL service integration tests, and workflow restart/retry tests remain future work.
 
 Exit criteria: state survives process restarts; duplicate requests do not duplicate effects; retry/cancellation/timeouts are deterministic and observable; PostgreSQL integration and concurrency tests pass.
 
@@ -75,8 +75,8 @@ Every change has a problem/acceptance criterion, focused implementation, tests, 
 
 ## Current next actions
 
-1. Commit the resolved uv.lock and switch CI to uv sync --locked.
-2. Validate this durable mission API and migration on the full Python matrix.
-3. Add PostgreSQL-backed integration and concurrency tests before production persistence.
-4. Introduce Temporal durable workflows with restart, retry, timeout, cancellation, and idempotency tests.
+1. Verify committed uv.lock using uv sync --locked across the supported Python matrix.
+2. Add PostgreSQL-backed integration and concurrency tests before production persistence.
+3. Introduce Temporal durable workflows with restart, retry, timeout, cancellation, and idempotency tests.
+4. Implement authentication and authorization before enabling production mission endpoints.
 5. Keep release actions disabled until identity and human approval are enforceable.
