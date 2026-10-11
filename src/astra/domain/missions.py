@@ -32,7 +32,12 @@ _ALLOWED_TRANSITIONS: dict[MissionStatus, frozenset[MissionStatus]] = {
     ),
     MissionStatus.READY: frozenset({MissionStatus.RUNNING, MissionStatus.CANCELLED}),
     MissionStatus.RUNNING: frozenset(
-        {MissionStatus.VERIFYING, MissionStatus.RETRY_WAIT, MissionStatus.FAILED, MissionStatus.CANCELLED}
+        {
+            MissionStatus.VERIFYING,
+            MissionStatus.RETRY_WAIT,
+            MissionStatus.FAILED,
+            MissionStatus.CANCELLED,
+        }
     ),
     MissionStatus.RETRY_WAIT: frozenset(
         {MissionStatus.RUNNING, MissionStatus.FAILED, MissionStatus.CANCELLED}

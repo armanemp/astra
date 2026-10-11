@@ -1,8 +1,7 @@
 """Contract tests for the initial HTTP surface."""
 
-from fastapi.testclient import TestClient
-
 from astra.main import create_app
+from fastapi.testclient import TestClient
 
 
 client = TestClient(create_app())
