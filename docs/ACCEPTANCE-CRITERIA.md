@@ -12,13 +12,18 @@ Targets below are initial engineering goals. Calibrate performance targets on re
 - Cancellation, timeout, bounded retry, and rollback paths are testable.
 - CI and release decisions rely on observed tool/test results, not model assertions.
 
-## Foundation
+## Foundation and persistence
 
-- CI lint, type check, unit tests, and coverage gate pass on supported Python versions.
+- CI lint, type check, unit tests, and coverage gate pass on supported Python versions using the committed uv.lock.
 - Coverage is at least 90% for current source modules; behavior tests remain mandatory.
-- Production config rejects interactive docs unless an explicitly reviewed policy changes it.
-- Health endpoints expose no sensitive configuration.
-- Clean setup works from documented commands.
+- Production config rejects interactive docs and non-PostgreSQL database URLs.
+- Mission create/list/get/transition behavior is covered by tests.
+- Repeated create with the same idempotency key and same payload returns one mission; changed payload returns conflict.
+- Concurrent state updates cannot silently overwrite a newer mission version.
+- Every accepted transition has a matching audit event committed in the same transaction.
+- A clean PostgreSQL database upgrades to the current Alembic head in CI.
+- PostgreSQL integration tests prove cross-session persistence, idempotency, and stale-write rejection.
+- Human approval and release endpoints remain unavailable until authentication and approval controls are implemented.
 
 ## Assistant benchmark (Phase 2)
 

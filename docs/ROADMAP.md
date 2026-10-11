@@ -1,10 +1,10 @@
 # Astra Roadmap
 
-**Status:** Living plan — durable mission core implementation  
+**Status:** Living plan — PostgreSQL integration verification  
 **Last reviewed:** 2026-10-12  
 **Owner:** Repository maintainers
 
-This roadmap changes only when decisions and evidence are documented. A phase is complete only when acceptance criteria pass; elapsed time never closes a phase. This is an engineering roadmap, not a claim that Astra is AGI.
+This roadmap changes only when decisions and evidence are documented. A phase is complete only when its acceptance criteria pass; elapsed time never closes a phase. This is an engineering roadmap, not a claim that Astra is AGI.
 
 ## Product direction
 
@@ -22,7 +22,7 @@ Build a general-purpose assistant that can research, plan, use constrained tools
 
 ## Phases and gates
 
-### Phase 0 — Engineering foundation (dependency lock gate under verification)
+### Phase 0 — Engineering foundation (dependency lock committed; main CI verified)
 Deliverables: repository conventions, typed settings, FastAPI factory, health/metadata endpoints, mission lifecycle contract, tests, CI, ADRs, security policy, threat model, acceptance scorecard, and a committed dependency lock.
 
 Exit criteria: CI passes on all supported Python versions using uv sync --locked; invalid mission transitions are rejected; production config disables interactive docs; setup is documented; no secrets or unbounded execution paths are introduced.
@@ -30,7 +30,7 @@ Exit criteria: CI passes on all supported Python versions using uv sync --locked
 ### Phase 1 — Durable mission core (in progress)
 Deliverables: PostgreSQL schema/migrations, mission/task APIs, idempotency keys, transactional state transitions, durable workflow execution, and restart/retry tests.
 
-Implemented: SQLAlchemy records, Alembic migration, mission create/list/get/transition APIs, idempotent creation, optimistic version checks, append-only transition history, and database readiness checks. Authentication, Temporal workflows, PostgreSQL service integration tests, and workflow restart/retry tests remain future work.
+Implemented: SQLAlchemy records, Alembic migration, mission create/list/get/transition APIs, idempotent creation, optimistic version checks, append-only transition history, database readiness checks, and a PostgreSQL 16 CI service testing migrations, cross-session persistence, idempotency, and stale writes. Authentication, Temporal workflows, workflow restart/retry tests, and production identity/authorization remain future work.
 
 Exit criteria: state survives process restarts; duplicate requests do not duplicate effects; retry/cancellation/timeouts are deterministic and observable; PostgreSQL integration and concurrency tests pass.
 
@@ -75,8 +75,7 @@ Every change has a problem/acceptance criterion, focused implementation, tests, 
 
 ## Current next actions
 
-1. Verify committed uv.lock using uv sync --locked across the supported Python matrix.
-2. Add PostgreSQL-backed integration and concurrency tests before production persistence.
-3. Introduce Temporal durable workflows with restart, retry, timeout, cancellation, and idempotency tests.
-4. Implement authentication and authorization before enabling production mission endpoints.
-5. Keep release actions disabled until identity and human approval are enforceable.
+1. Pass the dedicated PostgreSQL migration/persistence/concurrency CI job.
+2. Implement authentication and authorization before enabling mission endpoints in production.
+3. Add Temporal durable workflows with restart, retry, timeout, cancellation, and idempotency tests.
+4. Keep release actions disabled until identity and human approval are enforceable.
