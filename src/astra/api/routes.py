@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from astra import __version__
-from astra.api.missions import persistence_check, router as missions_router
+from astra.api.missions import persistence_check
 from astra.persistence.database import get_session
 
 
@@ -27,7 +27,6 @@ class MetadataResponse(BaseModel):
 
 
 router = APIRouter()
-router.include_router(missions_router)
 
 
 @router.get("/health/live", response_model=LivenessResponse, tags=["system"])

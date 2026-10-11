@@ -14,6 +14,8 @@ from astra.config import get_settings
 def get_engine() -> Engine:
     """Create one process-wide engine; production configuration is validated at startup."""
     url = get_settings().database_url
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     options: dict[str, object] = {"pool_pre_ping": True}
     if url.startswith("sqlite"):
         options["connect_args"] = {"check_same_thread": False}

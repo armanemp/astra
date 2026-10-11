@@ -3,21 +3,24 @@
 from fastapi import FastAPI
 
 from astra import __version__
+from astra.api.missions import router as missions_router
 from astra.api.routes import router
-from astra.config import get_settings
+from astra.config import Settings, get_settings
 
 
-def create_app() -> FastAPI:
-    """Create an application with validated configuration captured at startup."""
-    settings = get_settings()
+def create_app(settings: Settings | None = None) -> FastAPI:
+    """Create an app; unauthenticated mission mutations are disabled in production."""
+    runtime_settings = settings or get_settings()
     application = FastAPI(
-        title=settings.app_name,
+        title=runtime_settings.app_name,
         version=__version__,
-        docs_url="/docs" if settings.docs_enabled else None,
-        redoc_url="/redoc" if settings.docs_enabled else None,
-        openapi_url="/openapi.json" if settings.docs_enabled else None,
+        docs_url="/docs" if runtime_settings.docs_enabled else None,
+        redoc_url="/redoc" if runtime_settings.docs_enabled else None,
+        openapi_url="/openapi.json" if runtime_settings.docs_enabled else None,
     )
-    application.include_router(router, prefix=settings.api_prefix)
+    application.include_router(router, prefix=runtime_settings.api_prefix)
+    if runtime_settings.environment != "production":
+        application.include_router(missions_router, prefix=runtime_settings.api_prefix)
     return application
 
 

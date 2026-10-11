@@ -54,6 +54,7 @@ ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S"]
+"src/astra/api/*.py" = ["B008"]
 
 [tool.mypy]
 python_version = "3.12"

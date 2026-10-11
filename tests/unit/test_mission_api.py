@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from astra.config import Settings
 from astra.main import create_app
 from astra.persistence.database import get_session
 from astra.persistence.models import Base
@@ -51,7 +52,8 @@ def test_create_is_idempotent_and_audited(client: TestClient) -> None:
 
 def test_idempotency_key_cannot_be_reused_for_different_payload(client: TestClient) -> None:
     headers = {"Idempotency-Key": "create-mission-0002"}
-    assert client.post("/api/v1/missions", headers=headers, json={"title": "One"}).status_code == 201
+    created = client.post("/api/v1/missions", headers=headers, json={"title": "One"})
+    assert created.status_code == 201
     conflict = client.post("/api/v1/missions", headers=headers, json={"title": "Two"})
     assert conflict.status_code == 409
 
@@ -63,7 +65,12 @@ def test_transition_checks_state_version_and_appends_event(client: TestClient) -
         json={"title": "State transition"},
     ).json()
     url = f"/api/v1/missions/{created['id']}/transitions"
-    payload = {"target": "planning", "expected_version": 1, "actor": "test", "reason": "start planning"}
+    payload = {
+        "target": "planning",
+        "expected_version": 1,
+        "actor": "test",
+        "reason": "start planning",
+    }
     changed = client.post(url, json=payload)
     assert changed.status_code == 200
     assert changed.json()["status"] == "planning"
@@ -107,3 +114,17 @@ def test_readiness_reports_live_persistence(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "ready"
     assert response.json()["checks"]["database"] == "ready"
+
+
+def test_production_does_not_expose_unauthenticated_mission_api() -> None:
+    app = create_app(
+        Settings(
+            environment="production",
+            docs_enabled=False,
+            database_url="postgresql+psycopg://user:pass@localhost/astra",
+        )
+    )
+    client = TestClient(app)
+    response = client.get("/api/v1/missions")
+    assert response.status_code == 404
+    assert client.get("/openapi.json").status_code == 404

@@ -39,7 +39,11 @@ def _payload_hash(payload: MissionInput) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def create_mission(session: Session, payload: MissionInput, idempotency_key: str) -> tuple[MissionRecord, bool]:
+def create_mission(
+    session: Session,
+    payload: MissionInput,
+    idempotency_key: str,
+) -> tuple[MissionRecord, bool]:
     """Create once per key; replaying the same request returns the original resource."""
     digest = _payload_hash(payload)
     existing = session.scalar(
@@ -70,7 +74,7 @@ def create_mission(session: Session, payload: MissionInput, idempotency_key: str
     session.add(mission)
     try:
         session.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         session.rollback()
         existing = session.scalar(
             select(MissionRecord).where(MissionRecord.idempotency_key == idempotency_key)
@@ -78,7 +82,9 @@ def create_mission(session: Session, payload: MissionInput, idempotency_key: str
         if existing is None:
             raise
         if existing.idempotency_hash != digest:
-            raise MissionConflict("Idempotency-Key was already used with a different request body")
+            raise MissionConflict(
+                "Idempotency-Key was already used with a different request body"
+            ) from exc
         return existing, False
     session.refresh(mission)
     return mission, True
@@ -90,6 +96,7 @@ def get_mission(session: Session, mission_id: str) -> MissionRecord:
         select(MissionRecord)
         .options(selectinload(MissionRecord.events))
         .where(MissionRecord.id == mission_id)
+        .execution_options(populate_existing=True)
     )
     if mission is None:
         raise MissionNotFound(mission_id)

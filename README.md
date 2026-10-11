@@ -8,11 +8,11 @@ Astra is an evolving, safety-conscious AI assistant platform for research, plann
 
 - FastAPI application factory and system endpoints: /api/v1/health/live, /api/v1/health/ready, and /api/v1/meta.
 - Typed environment configuration; production requires PostgreSQL and disables interactive API docs.
-- Mission create/list/get/transition APIs backed by SQLAlchemy records and Alembic migrations.
+- Mission create/list/get/transition APIs backed by SQLAlchemy records and Alembic migrations in development/staging.
 - Idempotent creation via the Idempotency-Key header, optimistic concurrency via mission versions, and ordered transition audit history.
 - CI quality gates, architecture/security documentation, and a living roadmap.
 
-Authentication, Temporal durable workflows, provider integrations, long-term memory, sandboxed code execution, human approval UI, and production release remain unimplemented. Release and rollback API transitions are deliberately blocked until authenticated approval and a release controller exist.
+Authentication, Temporal durable workflows, provider integrations, long-term memory, sandboxed code execution, human approval UI, and production release remain unimplemented. Until authentication is implemented, mission mutation and query endpoints are not mounted in production. Release and rollback API transitions are also blocked until authenticated approval and a release controller exist.
 
 ## Quick start
 
@@ -31,7 +31,7 @@ For local development the default database is SQLite. Set ASTRA_DATABASE_URL to 
 - GET /api/v1/missions/{id} — current state and ordered audit history.
 - POST /api/v1/missions/{id}/transitions — version-checked transition.
 
-Example create request body: {"title":"Investigate a failing test","description":"Reproduce before proposing a patch"}.
+These mission endpoints are enabled only outside production until authentication/authorization is implemented.
 
 ## Quality checks
 
