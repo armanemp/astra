@@ -1,0 +1,32 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Astra.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: State observed and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include minimal steps and sanitized logs. Never include credentials or private data.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Astra version, Python version, OS, and relevant provider/runtime versions.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How can the fix be verified objectively?
+    validations:
+      required: true
