@@ -3,10 +3,6 @@
 import os
 from uuid import uuid4
 
-import pytest
-from sqlalchemy import text
-from sqlalchemy.orm import Session, sessionmaker
-
 from astra.application.missions import (
     MissionConflict,
     MissionInput,
@@ -16,6 +12,10 @@ from astra.application.missions import (
 )
 from astra.domain.missions import MissionStatus
 from astra.persistence.database import get_engine, get_session_factory
+
+import pytest
+from sqlalchemy import text
+from sqlalchemy.orm import Session, sessionmaker
 
 
 pytestmark = pytest.mark.skipif(
