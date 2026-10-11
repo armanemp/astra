@@ -1,6 +1,6 @@
 # Astra Roadmap
 
-**Status:** Living plan — foundation bootstrap  
+**Status:** Living plan — durable mission core implementation  
 **Last reviewed:** 2026-10-12  
 **Owner:** Repository maintainers
 
@@ -22,15 +22,17 @@ Build a general-purpose assistant that can research, plan, use constrained tools
 
 ## Phases and gates
 
-### Phase 0 — Engineering foundation (in progress)
+### Phase 0 — Engineering foundation (dependency-lock gate open)
 Deliverables: repository conventions, typed settings, FastAPI factory, health/metadata endpoints, mission lifecycle contract, tests, CI, ADRs, security policy, threat model, and acceptance scorecard.
 
-Exit criteria: CI passes on all supported Python versions; invalid mission transitions are rejected; production config disables interactive docs; setup is documented; no secrets or unbounded execution paths are introduced.
+Exit criteria: CI passes on all supported Python versions; invalid mission transitions are rejected; production config disables interactive docs; setup is documented; uv.lock is committed and CI verifies locked installs; no secrets or unbounded execution paths are introduced.
 
-### Phase 1 — Durable mission core
-Deliverables: PostgreSQL schema/migrations, repository interfaces, mission/task APIs, idempotency keys, transactional state transitions, Temporal workflows, and restart/retry tests.
+### Phase 1 — Durable mission core (in progress)
+Deliverables: PostgreSQL schema/migrations, mission/task APIs, idempotency keys, transactional state transitions, durable workflow execution, and restart/retry tests.
 
-Exit criteria: state survives process restarts; duplicate requests do not duplicate effects; retry/cancellation/timeouts are deterministic and observable.
+Implemented in this work package: SQLAlchemy records, Alembic migration, mission create/list/get/transition APIs, idempotent creation, optimistic version checks, append-only transition history, and database readiness checks. Authentication, Temporal workflows, PostgreSQL service integration tests, and workflow restart/retry tests remain future work.
+
+Exit criteria: state survives process restarts; duplicate requests do not duplicate effects; retry/cancellation/timeouts are deterministic and observable; PostgreSQL integration and concurrency tests pass.
 
 ### Phase 2 — Model gateway and useful assistant
 Deliverables: provider-neutral model contract, adapters, structured outputs, timeouts/retry rules, token/cost metering, research/file tools, planner, and evidence-aware responses.
@@ -53,12 +55,12 @@ Deliverables: failure triage, reproduction tests, patch proposal, independent ev
 Exit criteria: fault benchmarks meet an agreed success target; regression-causing patches are rejected; loop termination, budget limits, cancellation, and rollback are tested; agents cannot self-approve or push to main.
 
 ### Phase 6 — Human approvals and release engineering
-Deliverables: approval UI, immutable approval bound to artifact digest, protected release workflow, staged rollout, health gates, and rollback drills.
+Deliverables: approval UI, immutable approval bound to artifact digest, protected release workflow, staged deployment, health gates, and rollback drills.
 
 Exit criteria: changed artifacts invalidate approvals; no release occurs without approval and required checks; rollback is verified.
 
 ### Phase 7 — Hybrid local/cloud execution
-Deliverables: local bridge, authenticated outbound connection, worker identity, explicit workspace scopes, reconnect behavior, local-model option, and worker lifecycle.
+Deliverables: local bridge, authenticated outbound communication, worker identity, explicit workspace scopes, reconnect behavior, local-model option, and worker lifecycle.
 
 Exit criteria: no public inbound endpoint is required for local work; local permissions are scoped/revocable; interrupted work resumes or stops per policy; sensitive content is not sent without authorization.
 
@@ -73,7 +75,8 @@ Every change has a problem/acceptance criterion, focused implementation, tests, 
 
 ## Current next actions
 
-1. Finish foundation bootstrap after CI passes on the supported matrix.
-2. Add persisted mission records and migrations as one atomic work package.
-3. Introduce durable execution with restart/retry/cancellation acceptance tests.
-4. Do not enable autonomous tool actions until deterministic contracts and budgets exist.
+1. Commit the resolved uv.lock and switch CI to uv sync --locked.
+2. Validate this durable mission API and migration on the full Python matrix.
+3. Add PostgreSQL-backed integration and concurrency tests before production persistence.
+4. Introduce Temporal durable workflows with restart, retry, timeout, cancellation, and idempotency tests.
+5. Keep release actions disabled until identity and human approval are enforceable.

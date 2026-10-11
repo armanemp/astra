@@ -1,9 +1,12 @@
-"""Initial system endpoints. Business APIs arrive with persistence in a later phase."""
+"""System endpoints and application health contracts."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from astra import __version__
+from astra.api.missions import persistence_check, router as missions_router
+from astra.persistence.database import get_session
 
 
 class LivenessResponse(BaseModel):
@@ -24,6 +27,7 @@ class MetadataResponse(BaseModel):
 
 
 router = APIRouter()
+router.include_router(missions_router)
 
 
 @router.get("/health/live", response_model=LivenessResponse, tags=["system"])
@@ -33,19 +37,20 @@ def liveness() -> LivenessResponse:
 
 
 @router.get("/health/ready", response_model=ReadinessResponse, tags=["system"])
-def readiness() -> ReadinessResponse:
-    """Report readiness of implemented baseline components, without overstating capability."""
+def readiness(session: Session = Depends(get_session)) -> ReadinessResponse:
+    """Report readiness based on the actual persistence dependency."""
+    checks = persistence_check(session)
     return ReadinessResponse(
-        status="ready",
-        checks={"api": "ready", "persistence": "not_implemented"},
+        status="ready" if checks["database"] == "ready" else "not_ready",
+        checks={"api": "ready", **checks},
     )
 
 
 @router.get("/meta", response_model=MetadataResponse, tags=["system"])
 def metadata() -> MetadataResponse:
-    """Expose public metadata only; never expose secrets or full settings."""
+    """Expose implemented capabilities only; never expose secrets or full settings."""
     return MetadataResponse(
         name="Astra",
         version=__version__,
-        capabilities=["health", "mission_lifecycle_contract"],
+        capabilities=["health", "mission_lifecycle_contract", "durable_missions", "mission_audit"],
     )

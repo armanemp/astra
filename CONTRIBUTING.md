@@ -1,19 +1,20 @@
 # Contributing to Astra
 
-Astra is in foundation development. Keep changes small, reversible, tested, and consistent with `docs/ADR/`.
+Astra is in foundation and durable-core development. Keep changes small, reversible, tested, and consistent with docs/ADR/.
 
 ## Prerequisites and setup
 
-Install Python 3.12–3.14 and [uv](https://docs.astral.sh/uv/).
+Install Python 3.12–3.14 and uv.
 
-```bash
-uv sync --all-extras
-uv run pytest
-uv run ruff check .
-uv run mypy src/astra
-```
+- uv sync --all-extras
+- uv run alembic upgrade head
+- uv run pytest
+- uv run ruff check .
+- uv run mypy src/astra
 
-Do not commit virtual environments, local databases, `.env` files, credentials, or private data.
+After uv.lock is committed, use uv sync --locked --all-extras; update the lock only through a reviewed dependency-change PR.
+
+Do not commit virtual environments, local databases, .env files, credentials, or private data.
 
 ## Change process
 

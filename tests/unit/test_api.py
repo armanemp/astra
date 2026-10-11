@@ -19,19 +19,24 @@ def test_liveness_does_not_require_dependencies(client: TestClient) -> None:
     assert "version" in response.json()
 
 
-def test_readiness_is_honest_about_unimplemented_persistence(client: TestClient) -> None:
+def test_readiness_reports_database_dependency(client: TestClient) -> None:
     response = client.get("/api/v1/health/ready")
     assert response.status_code == 200
     assert response.json() == {
         "status": "ready",
-        "checks": {"api": "ready", "persistence": "not_implemented"},
+        "checks": {"api": "ready", "database": "ready"},
     }
 
 
-def test_metadata_lists_only_implemented_capabilities(client: TestClient) -> None:
+def test_metadata_lists_implemented_capabilities(client: TestClient) -> None:
     response = client.get("/api/v1/meta")
     assert response.status_code == 200
-    assert response.json()["capabilities"] == ["health", "mission_lifecycle_contract"]
+    assert response.json()["capabilities"] == [
+        "health",
+        "mission_lifecycle_contract",
+        "durable_missions",
+        "mission_audit",
+    ]
 
 
 def test_interactive_api_docs_are_present_in_development(client: TestClient) -> None:
