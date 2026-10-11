@@ -58,6 +58,20 @@ def test_idempotency_key_cannot_be_reused_for_different_payload(client: TestClie
     assert conflict.status_code == 409
 
 
+def test_blank_title_is_rejected(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/missions",
+        headers={"Idempotency-Key": "create-mission-blank"},
+        json={"title": "   "},
+    )
+    assert response.status_code == 422
+
+
+def test_get_unknown_mission_returns_404(client: TestClient) -> None:
+    response = client.get("/api/v1/missions/not-a-real-mission")
+    assert response.status_code == 404
+
+
 def test_transition_checks_state_version_and_appends_event(client: TestClient) -> None:
     created = client.post(
         "/api/v1/missions",
@@ -78,6 +92,20 @@ def test_transition_checks_state_version_and_appends_event(client: TestClient) -
     assert len(changed.json()["events"]) == 2
     stale = client.post(url, json=payload)
     assert stale.status_code == 409
+
+
+def test_invalid_domain_transition_is_rejected(client: TestClient) -> None:
+    created = client.post(
+        "/api/v1/missions",
+        headers={"Idempotency-Key": "create-mission-invalid"},
+        json={"title": "No skipping"},
+    ).json()
+    response = client.post(
+        f"/api/v1/missions/{created['id']}/transitions",
+        json={"target": "ready", "expected_version": 1, "actor": "test"},
+    )
+    assert response.status_code == 409
+    assert client.get(f"/api/v1/missions/{created['id']}").json()["status"] == "created"
 
 
 def test_release_is_blocked_without_human_approval_service(client: TestClient) -> None:
@@ -125,6 +153,5 @@ def test_production_does_not_expose_unauthenticated_mission_api() -> None:
         )
     )
     client = TestClient(app)
-    response = client.get("/api/v1/missions")
-    assert response.status_code == 404
+    assert client.get("/api/v1/missions").status_code == 404
     assert client.get("/openapi.json").status_code == 404

@@ -1,6 +1,6 @@
 """System endpoints and application health contracts."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -36,11 +36,17 @@ def liveness() -> LivenessResponse:
 
 
 @router.get("/health/ready", response_model=ReadinessResponse, tags=["system"])
-def readiness(session: Session = Depends(get_session)) -> ReadinessResponse:
+def readiness(
+    response: Response,
+    session: Session = Depends(get_session),
+) -> ReadinessResponse:
     """Report readiness based on the actual persistence dependency."""
     checks = persistence_check(session)
+    ready = checks["database"] == "ready"
+    if not ready:
+        response.status_code = 503
     return ReadinessResponse(
-        status="ready" if checks["database"] == "ready" else "not_ready",
+        status="ready" if ready else "not_ready",
         checks={"api": "ready", **checks},
     )
 
