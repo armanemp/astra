@@ -2,43 +2,44 @@
 
 Astra is an evolving, safety-conscious AI assistant platform for research, planning, tool use, durable memory, and evidence-based self-improvement.
 
-> **Status:** Foundation bootstrap · **Version:** 0.1.0 · **Production readiness:** Not production-ready
+> **Status:** Durable mission core in development · **Version:** 0.1.0 · **Production readiness:** Not production-ready
 
-The project is an engineering path toward more capable assistance; it does not claim to implement AGI.
+## Implemented baseline
 
-## What exists today
+- FastAPI application factory and system endpoints: /api/v1/health/live, /api/v1/health/ready, and /api/v1/meta.
+- Typed environment configuration; production requires PostgreSQL and disables interactive API docs.
+- Mission create/list/get/transition APIs backed by SQLAlchemy records and Alembic migrations in development/staging.
+- Idempotent creation via the Idempotency-Key header, optimistic concurrency via mission versions, and ordered transition audit history.
+- CI quality gates, architecture/security documentation, and a living roadmap.
 
-- FastAPI application factory and system endpoints: `/api/v1/health/live`, `/api/v1/health/ready`, and `/api/v1/meta`.
-- Typed environment configuration with a fail-safe production policy for interactive API docs.
-- Deterministic mission lifecycle contract that prevents skipping verification or approval.
-- CI quality gates for supported Python versions.
-- Roadmap, architecture, security policy, threat model, acceptance criteria, and ADRs.
-
-Persistence, model integrations, durable workflows, long-term memory, tool execution, sandboxing, approval UI, and production deployment are roadmap items—not implemented features yet.
+Authentication, Temporal durable workflows, provider integrations, long-term memory, sandboxed code execution, human approval UI, and production release remain unimplemented. Until authentication is implemented, mission mutation and query endpoints are not mounted in production. Release and rollback API transitions are also blocked until authenticated approval and a release controller exist.
 
 ## Quick start
 
 Requires Python 3.12–3.14 and uv.
 
-```bash
-uv sync --all-extras
-uv run uvicorn astra.main:app --reload
-```
+1. Install dependencies with uv sync --all-extras.
+2. Apply database migrations with uv run alembic upgrade head.
+3. Start the API with uv run uvicorn astra.main:app --reload.
 
-Endpoints:
-- `GET /api/v1/health/live`
-- `GET /api/v1/health/ready`
-- `GET /api/v1/meta`
+For local development the default database is SQLite. Set ASTRA_DATABASE_URL to a PostgreSQL URL for staging/production; production rejects non-PostgreSQL URLs and requires ASTRA_DOCS_ENABLED=false.
+
+## Mission API
+
+- POST /api/v1/missions — requires an Idempotency-Key header (at least 8 characters).
+- GET /api/v1/missions?limit=50&offset=0 — bounded pagination.
+- GET /api/v1/missions/{id} — current state and ordered audit history.
+- POST /api/v1/missions/{id}/transitions — version-checked transition.
+
+These mission endpoints are enabled only outside production until authentication/authorization is implemented.
 
 ## Quality checks
 
-```bash
-uv run ruff check .
-uv run mypy src/astra
-uv run pytest --cov=astra --cov-report=term-missing --cov-fail-under=90
-```
+- uv run ruff check .
+- uv run mypy src/astra
+- uv run pytest --cov=astra --cov-report=term-missing --cov-fail-under=90
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [the roadmap](docs/ROADMAP.md), [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), and [acceptance criteria](docs/ACCEPTANCE-CRITERIA.md).
+See CONTRIBUTING.md, docs/ROADMAP.md, docs/ARCHITECTURE.md, docs/SECURITY.md, and docs/ACCEPTANCE-CRITERIA.md.
 
 ## Principles
 
@@ -51,4 +52,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [the roadmap](docs/ROADMAP.md), [archite
 
 ## License
 
-See [LICENSE-DECISION.md](LICENSE-DECISION.md). No software license has been selected yet; no open-source license grant should be assumed.
+See LICENSE-DECISION.md. No software license has been selected yet; no open-source license grant should be assumed.

@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import urlsplit
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,12 +26,17 @@ class Settings(BaseSettings):
         pattern=r"^/(?:[a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*)?$",
     )
     docs_enabled: bool = True
+    database_url: str = "sqlite:///./astra.db"
 
     @model_validator(mode="after")
-    def disable_interactive_docs_in_production(self) -> "Settings":
-        """Require explicit safe configuration: API docs must be disabled in production."""
+    def validate_runtime_security(self) -> "Settings":
+        """Reject unsafe production defaults before the application starts."""
         if self.environment == "production" and self.docs_enabled:
             raise ValueError("ASTRA_DOCS_ENABLED must be false in production")
+        if self.environment == "production":
+            scheme = urlsplit(self.database_url).scheme
+            if scheme not in {"postgresql", "postgresql+psycopg"}:
+                raise ValueError("Production ASTRA_DATABASE_URL must use PostgreSQL")
         return self
 
 
