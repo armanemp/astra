@@ -64,6 +64,6 @@ packages = ["astra"]
 warn_unreachable = true
 pretty = true
 
-[tool.mypy.overrides]
+[[tool.mypy.overrides]]
 module = ["fastapi.*", "pydantic_settings.*", "alembic.*"]
 ignore_missing_imports = true

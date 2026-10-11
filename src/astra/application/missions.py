@@ -140,12 +140,13 @@ def transition_existing_mission(
         raise MissionConflict(str(exc)) from exc
 
     next_version = mission.version + 1
-    result = session.execute(
+    updated_id = session.scalar(
         update(MissionRecord)
         .where(MissionRecord.id == mission_id, MissionRecord.version == expected_version)
         .values(status=target.value, version=next_version)
+        .returning(MissionRecord.id)
     )
-    if result.rowcount != 1:
+    if updated_id is None:
         session.rollback()
         raise MissionConflict("Mission changed concurrently; reload and retry")
     session.add(
